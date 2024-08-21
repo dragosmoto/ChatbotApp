@@ -1,0 +1,107 @@
+﻿@{
+    ViewData["Title"] = "Chatbot";
+}
+<div class="container">
+    <div id="chatbox">
+        <div id="messagesList"></div>
+    </div>
+    <div>
+        <textarea id="messageInput" placeholder="Type your message here..." rows="4" cols="50"></textarea>
+        <br>
+        <button id ="sendMessageButton"onclick="sendMessage()">Send</button>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/signalr.min.js"></script>
+    <script type="text/javascript">
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/chathub")
+            .build();
+
+        connection.start().then(function () {
+            console.log("SignalR Connected");
+        }).catch(function (err) {
+            return console.error(err.toString());
+        });
+
+        let currentAssistantMessage = null; // Variable to hold the current message element
+
+        connection.on("ReceiveMessage", function (user, message) {
+            console.log("Received message: " + message);
+
+            if (user === "assistant") {
+                // If this is the first word, create a new message element
+                if (!currentAssistantMessage) {
+                    currentAssistantMessage = document.createElement("div");
+                    currentAssistantMessage.textContent = `${user}: ${message}`;
+                    document.getElementById("messagesList").appendChild(currentAssistantMessage);
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                } else {
+                    // Append the next word to the existing message
+                    currentAssistantMessage.textContent += " " + message.trim();
+                }
+            } else {
+                // For other users, just append the full message
+                const msg = document.createElement("div");
+                msg.textContent = `${user}: ${message}`;
+                document.getElementById("messagesList").appendChild(msg);
+                messagesList.scrollTop = messagesList.scrollHeight;
+            }
+
+            document.getElementById("chatbox").scrollTop = document.getElementById("chatbox").scrollHeight;
+        });
+
+        function sendMessage() {
+            const userInput = document.getElementById("messageInput").value;
+            console.log("Sending message: " + userInput);
+
+            fetch('/Chatbot/SendMessage', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ userInput: userInput, connectionId: connection.connectionId }) // Pass connection ID
+            }).then(response => {
+                if (response.ok) {
+                    console.log("Message sent to server successfully.");
+                } else {
+                    console.error("Failed to send message to server: " + response.statusText);
+                }
+            }).catch(error => {
+                console.error("Fetch error: " + error);
+            });
+
+            const msg = document.createElement("div");
+            //msg.textContent = `You: ${userInput}`;
+            document.getElementById("messagesList").appendChild(msg);
+            document.getElementById("messageInput").value = '';
+
+            currentAssistantMessage = null; // Reset assistant message tracker when a new user message is sent
+        }
+        // Listen for Enter and Shift+Enter key presses
+        document.getElementById("messageInput").addEventListener("keydown", function (event) {
+            if (event.key === "Enter" && !event.shiftKey) {
+                event.preventDefault(); // Prevents the default action of adding a new line
+                sendMessage(); // Calls the sendMessage function
+            } else if (event.key === "Enter" && event.shiftKey) {
+                // Allow the default behavior to insert a new line
+            }
+        });
+        function auto_grow(element) {
+            element.style.height = "5px";
+            element.style.height = (element.scrollHeight) + "px";
+        }
+    </script>
+
+
+   @*  <button onclick="testSignalR()">Test SignalR</button>
+
+    <script type="text/javascript">
+        function testSignalR() {
+            connection.invoke("SendMessage", "testUser", "This is a test message")
+                .catch(function (err) {
+                    console.error(err.toString());
+                });
+        }
+    </script> *@
+}

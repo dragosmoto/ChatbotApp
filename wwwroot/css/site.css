@@ -1,0 +1,60 @@
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+.container {
+    width: 90%;
+    height: 90%;
+}
+
+#chatbox {
+    display: flex;
+    flex-direction: column;
+    height: 65%; /* Set the overall chatbox height */
+    width: 70%; /* Ensure the chatbox takes up 70% of the width */
+    margin: 20px;
+    overflow-y: auto; /* Allows scrolling if content exceeds height */
+    position: fixed; /* Ensures the chatbox stays in position */
+}
+
+#messagesList {
+    flex-grow: 1;
+    overflow-y: auto; /* Messages list should scroll if the content exceeds the height */
+    padding: 10px; /* Optional padding for better spacing */
+    text-align: justify;
+}
+
+
+
+#messageInput {
+    position:absolute;
+    resize: none;
+    margin:10px;
+    width:70%;
+    height:5%;
+    bottom:10%;
+}
+
+#sendMessageButton {
+    position: absolute;
+    margin: 10px;
+    width:100px;
+    bottom: 11%;
+    right: 5%;
+}
+
